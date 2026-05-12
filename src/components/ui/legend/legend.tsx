@@ -4,18 +4,26 @@ import { KeycapSequence } from "@/components/ui/keycap/keycap";
 
 import styles from "./legend.module.css";
 
-export type LegendItem = {
+type LegendItemBase = {
   /** Cap labels rendered as adjacent keycaps. */
   readonly keys: readonly string[];
   /** User-facing description; rendered next to keycaps. */
   readonly label: string;
-  /** When set, the entry renders as a clickable button. */
-  readonly onClick?: () => void;
-  /** Accessible name; required when `onClick` is set. */
-  readonly ariaLabel?: string;
   /** Bump to re-trigger the entry's mount animation. */
   readonly pulseKey?: number;
 };
+
+/*
+ * Entries either render as static text or as a clickable button; the
+ * button form requires an accessible name. Encoding the pair as a
+ * discriminated union means TS can prove the aria-label is a string
+ * on the button branch — no runtime check needed.
+ */
+export type LegendItem = LegendItemBase &
+  (
+    | { readonly onClick?: undefined; readonly ariaLabel?: undefined }
+    | { readonly onClick: () => void; readonly ariaLabel: string }
+  );
 
 export function Legend({ items }: { items: readonly LegendItem[] }) {
   if (items.length === 0) return null;
