@@ -4,16 +4,16 @@ const ANCHOR = new Date("2026-05-11T13:00:00Z").getTime();
 const t = (min: number, sec: number): number =>
   ANCHOR + min * 60_000 + sec * 1_000;
 
-export const INSTANCES = ["kc4qn", "m7w3p", "t2x8r"] as const;
-export type InstanceId = (typeof INSTANCES)[number];
+const INSTANCES = ["kc4qn", "m7w3p", "t2x8r"] as const;
+type InstanceId = (typeof INSTANCES)[number];
 
-export const REQUEST_IDS = {
+const REQUEST_IDS = {
   r4d8a2: "kc4qn",
   k9b3c7: "m7w3p",
   p2x6n1: "t2x8r",
 } as const satisfies Record<string, InstanceId>;
 
-export type RequestId = keyof typeof REQUEST_IDS;
+type RequestId = keyof typeof REQUEST_IDS;
 
 type PartialLogLine = Omit<LogLine, "id">;
 
