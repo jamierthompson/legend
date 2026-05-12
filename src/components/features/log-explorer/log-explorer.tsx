@@ -26,7 +26,7 @@ import {
 import { SHORTCUTS } from "@/lib/keyboard-shortcuts";
 import type { LogLine } from "@/types/log";
 
-import { LogList } from "./log-list";
+import { LogList, lineDomId } from "./log-list";
 import { useContextWindows } from "./use-context-windows";
 import { useListboxKeyboard } from "./use-listbox-keyboard";
 
@@ -137,7 +137,7 @@ export function LogExplorer({ lines }: { lines: readonly LogLine[] }) {
   useEffect(() => {
     if (!focusedLineId) return;
     document
-      .getElementById(`line_${focusedLineId}`)
+      .getElementById(lineDomId(focusedLineId))
       ?.scrollIntoView({ block: "nearest" });
   }, [focusedLineId]);
 

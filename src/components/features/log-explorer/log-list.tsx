@@ -12,7 +12,10 @@ import type { DerivedLogLine } from "@/types/log";
 import { LogLine } from "./log-line";
 import styles from "./log-list.module.css";
 
-const lineDomId = (lineId: string) => `line_${lineId}`;
+/** DOM id for a log-line row. Exported so callers that need to focus
+ * or scroll to a specific line can use the same value the list
+ * renders. */
+export const lineDomId = (lineId: string) => `line_${lineId}`;
 
 export function LogList({
   lines,
