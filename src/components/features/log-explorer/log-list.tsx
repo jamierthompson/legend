@@ -77,6 +77,7 @@ export function LogList({
                 id={lineDomId(line.id)}
                 role="option"
                 aria-selected={isFocused}
+                aria-disabled={!isClickable || undefined}
                 data-focused={isFocused || undefined}
                 data-selected={isSelected || undefined}
                 data-dimmed={line.isDimmed || undefined}
