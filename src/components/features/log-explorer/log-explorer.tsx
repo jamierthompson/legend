@@ -13,6 +13,8 @@ import {
   ScenarioChips,
   SCENARIOS,
 } from "@/components/features/scenario-chips/scenario-chips";
+import { Legend, type LegendItem } from "@/components/ui/legend";
+import { isAtFileBoundary } from "@/lib/context-state";
 import { deriveLines } from "@/lib/derive-lines";
 import {
   filterReducer,
@@ -47,6 +49,7 @@ export function LogExplorer({ lines }: { lines: readonly LogLine[] }) {
     toggleContext,
     expandMostRecentContext,
     selectedContextLineIds,
+    expandPulseKey,
   } = useContextWindows({
     lines,
     linesById,
@@ -101,8 +104,67 @@ export function LogExplorer({ lines }: { lines: readonly LogLine[] }) {
       ?.scrollIntoView({ block: "nearest" });
   }, [focusedLineId]);
 
+  /*
+   * Translate app state into Legend entries. Items appear left to right
+   * in the order they're pushed; the rightmost entry is the stable
+   * "ground" position. Each entry is gated on whether its action is
+   * currently meaningful.
+   */
+  const legendItems = useMemo<readonly LegendItem[]>(() => {
+    const items: LegendItem[] = [];
+
+    const mostRecent = openContexts[openContexts.length - 1];
+    if (mostRecent) {
+      const anchorIdx = linesIndexById.get(mostRecent.selectedLineId) ?? -1;
+      if (!isAtFileBoundary(anchorIdx, mostRecent.range, lines.length)) {
+        items.push({
+          keys: ["Shift", "E"],
+          label: "Expand context",
+          ariaLabel: "Expand the most recent context window",
+          onClick: expandMostRecentContext,
+          pulseKey: expandPulseKey,
+        });
+      }
+    }
+
+    if (focusedLineId) {
+      const focusedIsAnchor = selectedContextLineIds.has(focusedLineId);
+      const focusedLine = visibleLines.find((l) => l.id === focusedLineId);
+      const focusedCanToggle =
+        hasAnyFilter(filterState) &&
+        focusedLine !== undefined &&
+        focusedLine.isVisible &&
+        !focusedLine.isDimmed;
+
+      if (focusedCanToggle || focusedIsAnchor) {
+        items.push({
+          keys: ["E"],
+          label: focusedIsAnchor ? "Hide context" : "View context",
+          ariaLabel: focusedIsAnchor
+            ? "Hide context on focused line"
+            : "View context on focused line",
+          onClick: () => toggleContext(focusedLineId),
+        });
+      }
+    }
+
+    return items;
+  }, [
+    openContexts,
+    linesIndexById,
+    lines.length,
+    expandMostRecentContext,
+    expandPulseKey,
+    focusedLineId,
+    selectedContextLineIds,
+    visibleLines,
+    filterState,
+    toggleContext,
+  ]);
+
   return (
     <>
+      <Legend items={legendItems} />
       <ScenarioChips state={filterState} dispatch={dispatch} />
       <LogList
         lines={visibleLines}

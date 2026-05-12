@@ -46,6 +46,12 @@ html {
   --content-padding-x: 1rem;
 
   /*
+   * Hand the responsive content padding to the Legend's public token
+   * so the toolbar's horizontal padding tracks the rest of the page.
+   */
+  --legend-padding-inline: var(--content-padding-x);
+
+  /*
    * Colors. light-dark() resolves against the active color-scheme;
    * the html element above declares `light dark` so the browser picks
    * the arm matching the user's OS preference.

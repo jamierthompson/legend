@@ -33,6 +33,13 @@ export function useContextWindows({
   scenarios: readonly ScenarioPreset[];
 }) {
   const [openContexts, setOpenContexts] = useState<readonly OpenContext[]>([]);
+  /*
+   * Counter bumped on every successful expand. Threaded into the
+   * Legend's `pulseKey` for the Expand entry so the mount animation
+   * replays even when the entry's label and keys are unchanged —
+   * a visible acknowledgement that the press took effect.
+   */
+  const [expandPulseKey, setExpandPulseKey] = useState(0);
 
   /*
    * Drop a context only once every chip whose individual filter would
@@ -88,18 +95,20 @@ export function useContextWindows({
   );
 
   const expandMostRecentContext = useCallback(() => {
-    setOpenContexts((current) => {
-      if (current.length === 0) return current;
-      const last = current[current.length - 1];
-      const idx = linesIndexById.get(last.selectedLineId) ?? -1;
-      if (isAtFileBoundary(idx, last.range, lines.length)) return current;
-      return current.map((c, i) =>
+    if (openContexts.length === 0) return;
+    const last = openContexts[openContexts.length - 1];
+    const idx = linesIndexById.get(last.selectedLineId) ?? -1;
+    if (isAtFileBoundary(idx, last.range, lines.length)) return;
+
+    setOpenContexts((current) =>
+      current.map((c, i) =>
         i === current.length - 1
           ? { ...c, range: c.range + CONTEXT_RANGE_STEP }
           : c,
-      );
-    });
-  }, [lines.length, linesIndexById]);
+      ),
+    );
+    setExpandPulseKey((k) => k + 1);
+  }, [openContexts, lines.length, linesIndexById]);
 
   /*
    * Filter-gated set of anchor ids. Open contexts whose anchor stops
@@ -125,5 +134,6 @@ export function useContextWindows({
     toggleContext,
     expandMostRecentContext,
     selectedContextLineIds,
+    expandPulseKey,
   };
 }
