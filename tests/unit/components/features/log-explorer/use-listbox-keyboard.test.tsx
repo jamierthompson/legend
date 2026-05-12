@@ -25,6 +25,8 @@ function setup(focusedLineId: string | null) {
   const setFocusedLineId = vi.fn<(id: string) => void>();
   const onToggleContext = vi.fn<(id: string) => void>();
   const onExpandContext = vi.fn<() => void>();
+  const onNextAnchor = vi.fn<() => void>();
+  const onPrevAnchor = vi.fn<() => void>();
   const { result } = renderHook(() =>
     useListboxKeyboard({
       lines,
@@ -32,6 +34,8 @@ function setup(focusedLineId: string | null) {
       setFocusedLineId,
       onToggleContext,
       onExpandContext,
+      onNextAnchor,
+      onPrevAnchor,
     }),
   );
   return {
@@ -39,6 +43,8 @@ function setup(focusedLineId: string | null) {
     setFocusedLineId,
     onToggleContext,
     onExpandContext,
+    onNextAnchor,
+    onPrevAnchor,
   };
 }
 
@@ -115,6 +121,18 @@ describe("useListboxKeyboard", () => {
     expect(onExpandContext).toHaveBeenCalledOnce();
   });
 
+  it("] cycles to the next anchor", () => {
+    const { handleKeyDown, onNextAnchor } = setup("a");
+    handleKeyDown(fakeEvent("]"));
+    expect(onNextAnchor).toHaveBeenCalledOnce();
+  });
+
+  it("[ cycles to the previous anchor", () => {
+    const { handleKeyDown, onPrevAnchor } = setup("a");
+    handleKeyDown(fakeEvent("["));
+    expect(onPrevAnchor).toHaveBeenCalledOnce();
+  });
+
   it("ignores modified keys (cmd/ctrl/alt)", () => {
     const { handleKeyDown, setFocusedLineId, onToggleContext } = setup("a");
     const event = {
@@ -134,6 +152,8 @@ describe("useListboxKeyboard", () => {
     const setFocusedLineId = vi.fn<(id: string) => void>();
     const onToggleContext = vi.fn<(id: string) => void>();
     const onExpandContext = vi.fn<() => void>();
+    const onNextAnchor = vi.fn<() => void>();
+    const onPrevAnchor = vi.fn<() => void>();
     const { result } = renderHook(() =>
       useListboxKeyboard({
         lines: [],
@@ -141,6 +161,8 @@ describe("useListboxKeyboard", () => {
         setFocusedLineId,
         onToggleContext,
         onExpandContext,
+        onNextAnchor,
+        onPrevAnchor,
       }),
     );
     result.current(fakeEvent("j"));

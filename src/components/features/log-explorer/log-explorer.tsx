@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  useCallback,
   useEffect,
   useLayoutEffect,
   useMemo,
@@ -80,12 +81,43 @@ export function LogExplorer({ lines }: { lines: readonly LogLine[] }) {
     [visibleLines],
   );
 
+  /*
+   * Anchor-cycling: from the focused anchor, move to the next or
+   * previous anchor in openContexts order, wrapping at the ends. When
+   * the focus isn't on any anchor, the next-anchor binding lands on
+   * the first anchor and the previous-anchor binding lands on the
+   * last. No-op when no contexts are open.
+   */
+  const navigateNextAnchor = useCallback(() => {
+    if (openContexts.length === 0) return;
+    const currentIdx = focusedLineId
+      ? openContexts.findIndex((c) => c.selectedLineId === focusedLineId)
+      : -1;
+    const nextIdx =
+      currentIdx === -1 ? 0 : (currentIdx + 1) % openContexts.length;
+    setFocusedLineId(openContexts[nextIdx].selectedLineId);
+  }, [openContexts, focusedLineId]);
+
+  const navigatePrevAnchor = useCallback(() => {
+    if (openContexts.length === 0) return;
+    const currentIdx = focusedLineId
+      ? openContexts.findIndex((c) => c.selectedLineId === focusedLineId)
+      : -1;
+    const prevIdx =
+      currentIdx === -1
+        ? openContexts.length - 1
+        : (currentIdx - 1 + openContexts.length) % openContexts.length;
+    setFocusedLineId(openContexts[prevIdx].selectedLineId);
+  }, [openContexts, focusedLineId]);
+
   const handleKeyDown = useListboxKeyboard({
     lines: navigableLines,
     focusedLineId,
     setFocusedLineId,
     onToggleContext: toggleContext,
     onExpandContext: expandMostRecentContext,
+    onNextAnchor: navigateNextAnchor,
+    onPrevAnchor: navigatePrevAnchor,
   });
 
   /*
@@ -203,7 +235,7 @@ export function LogExplorer({ lines }: { lines: readonly LogLine[] }) {
     if (openContexts.length > 0) {
       items.push({
         keys: ["Esc"],
-        label: "Close",
+        label: "Close recent",
         ariaLabel: "Close the most recent context",
         onClick: closeMostRecentContext,
       });

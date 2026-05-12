@@ -9,6 +9,8 @@ type Action =
   | "navigate-prev"
   | "navigate-first"
   | "navigate-last"
+  | "navigate-next-anchor"
+  | "navigate-prev-anchor"
   | "toggle-context"
   | "expand-context";
 
@@ -24,6 +26,8 @@ function matchAction(event: KeyboardEvent<HTMLUListElement>): Action | null {
   if (k === "k" || k === "ArrowUp") return "navigate-prev";
   if (k === "g") return "navigate-first";
   if (k === "e" || k === "Enter") return "toggle-context";
+  if (k === "]") return "navigate-next-anchor";
+  if (k === "[") return "navigate-prev-anchor";
   return null;
 }
 
@@ -33,12 +37,16 @@ export function useListboxKeyboard({
   setFocusedLineId,
   onToggleContext,
   onExpandContext,
+  onNextAnchor,
+  onPrevAnchor,
 }: {
   lines: readonly LogLine[];
   focusedLineId: string | null;
   setFocusedLineId: (id: string) => void;
   onToggleContext: (lineId: string) => void;
   onExpandContext: () => void;
+  onNextAnchor: () => void;
+  onPrevAnchor: () => void;
 }) {
   return useCallback(
     (event: KeyboardEvent<HTMLUListElement>) => {
@@ -52,6 +60,14 @@ export function useListboxKeyboard({
       }
       if (action === "expand-context") {
         onExpandContext();
+        return;
+      }
+      if (action === "navigate-next-anchor") {
+        onNextAnchor();
+        return;
+      }
+      if (action === "navigate-prev-anchor") {
+        onPrevAnchor();
         return;
       }
 
@@ -82,6 +98,14 @@ export function useListboxKeyboard({
 
       setFocusedLineId(lines[next].id);
     },
-    [lines, focusedLineId, setFocusedLineId, onToggleContext, onExpandContext],
+    [
+      lines,
+      focusedLineId,
+      setFocusedLineId,
+      onToggleContext,
+      onExpandContext,
+      onNextAnchor,
+      onPrevAnchor,
+    ],
   );
 }
